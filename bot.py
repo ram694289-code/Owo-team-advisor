@@ -144,7 +144,8 @@ async def handle_owo_message(message: discord.Message):
         # ── PETS OUTPUT ──
         if waiting == "pets":
             pets_keywords = ["lvl.", "level", "pets", "fabled", "legendary", "mythical",
-                             "epic", "rare", "uncommon", "common", "gem"]
+                             "epic", "rare", "uncommon", "common", "gem", "hp", "str",
+                             "mag", "wp", "pr", "mr", "xp", "animal"]
             if any(k in content.lower() for k in pets_keywords):
                 animals = parse_pets(content)
                 if animals:
@@ -181,11 +182,23 @@ async def handle_owo_message(message: discord.Message):
                     else:
                         await message.channel.send(msg)
 
-                    # Auto-trigger owo weapon scan (all pages) using @mention
+                    # Auto-trigger weapon scan — use @mention so OwO shows THIS user's weapons
                     reset_weapon_scan(session)
                     mention = session.get("user_mention", "")
                     await asyncio.sleep(1)
-                    await message.channel.send(f"owo weapon {mention}".strip())
+                    cmd = f"owo weapon {mention}".strip()
+                    await message.channel.send(cmd)
+                    break
+
+                else:
+                    # Parser found keywords but couldn't identify pets —
+                    # OwO's format might have changed. Tell the user instead of going silent.
+                    await message.channel.send(
+                        "⚠️ I saw OwO's pets response but couldn't read any pet names.\n"
+                        "This can happen if OwO's layout changed. Try again, or let the developer know!\n"
+                        "_(Use `!start` to retry)_"
+                    )
+                    session["waiting_for"] = None
                     break
 
         # ── WEAPONS OUTPUT ──
